@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.paint.RadialGradient?>
+<?import javafx.scene.paint.Stop?>
+<?import javafx.scene.shape.Rectangle?>
+
+<AnchorPane prefHeight="425.0" prefWidth="599.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.javafxdemo.GridController">
+   <children>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" height="282.0" layoutX="252.0" layoutY="53.0" stroke="BLACK" strokeType="INSIDE" width="282.0">
+         <fill>
+            <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
+               <stops>
+                  <Stop color="#d6d8da" />
+                  <Stop color="WHITE" offset="1.0" />
+               </stops>
+            </RadialGradient>
+         </fill>
+      </Rectangle>
+      <Canvas fx:id="canvas" height="280.0" layoutX="253.0" layoutY="54.0" onMouseClicked="#handleCanvasClick" onMouseDragged="#drawMap" onMousePressed="#handleCanvasClick" width="280.0" />
+      <TextField fx:id="myTextField" layoutX="25.0" layoutY="180.0" />
+      <Label layoutX="29.0" layoutY="158.0" text="Size:" />
+      <Button layoutX="25.0" layoutY="214.0" mnemonicParsing="false" onAction="#rozpocznijSiatke" text="Accept size" />
+      <Button layoutX="25.0" layoutY="320.0" mnemonicParsing="false" onAction="#zatwierdzRysunek" text="Save Drawing" />
+      <ChoiceBox fx:id="siatkiWybieralnia" layoutX="25.0" layoutY="48.0" onContextMenuRequested="#rozpocznijSiatke" prefWidth="150.0" />
+      <Button layoutX="252.0" layoutY="346.0" mnemonicParsing="false" onAction="#setThreads" text="Begin simulation" />
+      <Label layoutX="25.0" layoutY="20.0" prefHeight="16.0" prefWidth="190.0" text="Choose an existing picture:" />
+      <Label layoutX="30.0" layoutY="124.0" text="Create a new picture:" />
+      <Label layoutX="29.0" layoutY="256.0" text="Drawing name:" />
+      <TextField fx:id="pictureName" layoutX="25.0" layoutY="285.0" />
+      <Button layoutX="399.0" layoutY="346.0" mnemonicParsing="false" onAction="#stopThreads" text="Stop simulation" />
+      <Label layoutX="261.0" layoutY="378.0" text="Simulation sleep" />
+      <Slider fx:id="sleepTimeSlider" blockIncrement="0.0" layoutX="379.0" layoutY="378.0" majorTickUnit="100.0" max="500.0" min="10.0" minorTickCount="10" onContextMenuRequested="#setSleepTime" onMouseClicked="#setSleepTime" onMousePressed="#setSleepTime" showTickLabels="true" showTickMarks="true" value="30.0" />
+      <Label layoutX="261.0" layoutY="20.0" text="Number of Threads:" />
+      <TextField layoutX="399.0" layoutY="15.0" />
+   </children>
+</AnchorPane>
