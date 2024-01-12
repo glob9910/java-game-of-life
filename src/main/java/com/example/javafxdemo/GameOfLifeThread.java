@@ -8,18 +8,28 @@ import java.util.Random;
 public class GameOfLifeThread extends Thread {
 
     Random random = new Random();
-    private GridController gridController;
-    private boolean[][] cells;
-    private int width;
-    private int startHeight;
-    private int endHeight;
+    private final GridController gridController;
+    private final boolean[][] cells;
+    private final int width;
+    private final int startHeight;
+    private final int endHeight;
+
+    //volatile? czy będzie konieczne, bo jest czytane w tym samym wątku, ale nie powinno być, bo slider
     private volatile boolean running = true;
     private volatile int sleepTime;
-    private Color color;
+    private final Color color;
 
-    public GameOfLifeThread(GridController gridController, boolean[][] cells, int width, int startHeight, int endHeight) {
+
+    public GameOfLifeThread(
+            GridController gridController,
+            boolean[][] map,
+            int width,
+            int startHeight,
+            int endHeight
+    ) {
+
         this.gridController = gridController;
-        this.cells = cells;
+        this.cells = map;
         this.width = width;
         this.startHeight = startHeight;
         this.endHeight = endHeight;
@@ -34,8 +44,11 @@ public class GameOfLifeThread extends Thread {
         running = false;
     }
 
+    //sleepTime, thread nie powinien mieć dostępu do tego pliku fxml, runLater dziwne
     public void run() {
+
         sleepTime = gridController.sleepTime;
+
         while (running) {
             checkCells();
             Platform.runLater(() -> {
@@ -50,7 +63,9 @@ public class GameOfLifeThread extends Thread {
         }
     }
 
+    //error i czytelnosc i w checkNeighbours
     private void checkCells() {
+
         synchronized (cells) {
             for (int i = startHeight; i < endHeight; i++) {
                 for (int j = 0; j < width; j++) {
@@ -60,7 +75,7 @@ public class GameOfLifeThread extends Thread {
                     }
 
                     if (cells[i][j] && (howManyNeighbours != 2 && howManyNeighbours != 3)) {
-                        cells[i][j] = false;
+                        cells[i][j] = false;        //overpopulation or loneliness
                     }
                 }
             }
@@ -90,4 +105,3 @@ public class GameOfLifeThread extends Thread {
         return howManyAreMarked;
     }
 }
-

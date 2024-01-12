@@ -24,11 +24,11 @@
          </fill>
       </Rectangle>
       <Canvas fx:id="canvas" height="280.0" layoutX="253.0" layoutY="54.0" onMouseClicked="#handleCanvasClick" onMouseDragged="#drawMap" onMousePressed="#handleCanvasClick" width="280.0" />
-      <TextField fx:id="myTextField" layoutX="25.0" layoutY="180.0" />
+      <TextField fx:id="sizeTextField" layoutX="25.0" layoutY="180.0" />
       <Label layoutX="29.0" layoutY="158.0" text="Size:" />
-      <Button layoutX="25.0" layoutY="214.0" mnemonicParsing="false" onAction="#rozpocznijSiatke" text="Accept size" />
-      <Button layoutX="25.0" layoutY="320.0" mnemonicParsing="false" onAction="#zatwierdzRysunek" text="Save Drawing" />
-      <ChoiceBox fx:id="siatkiWybieralnia" layoutX="25.0" layoutY="48.0" onContextMenuRequested="#rozpocznijSiatke" prefWidth="150.0" />
+      <Button layoutX="25.0" layoutY="214.0" mnemonicParsing="false" onAction="#drawMapStart" text="Accept size" />
+      <Button layoutX="25.0" layoutY="320.0" mnemonicParsing="false" onAction="#saveDrawing" text="Save Drawing" />
+      <ChoiceBox fx:id="savedGrids" layoutX="25.0" layoutY="48.0" prefWidth="150.0" />
       <Button layoutX="252.0" layoutY="346.0" mnemonicParsing="false" onAction="#setThreads" text="Begin simulation" />
       <Label layoutX="25.0" layoutY="20.0" prefHeight="16.0" prefWidth="190.0" text="Choose an existing picture:" />
       <Label layoutX="30.0" layoutY="124.0" text="Create a new picture:" />
@@ -38,6 +38,6 @@
       <Label layoutX="261.0" layoutY="378.0" text="Simulation sleep" />
       <Slider fx:id="sleepTimeSlider" blockIncrement="0.0" layoutX="379.0" layoutY="378.0" majorTickUnit="100.0" max="500.0" min="10.0" minorTickCount="10" onContextMenuRequested="#setSleepTime" onMouseClicked="#setSleepTime" onMousePressed="#setSleepTime" showTickLabels="true" showTickMarks="true" value="30.0" />
       <Label layoutX="261.0" layoutY="20.0" text="Number of Threads:" />
-      <TextField layoutX="399.0" layoutY="15.0" />
+      <TextField fx:id="numberOfThreadsTextField" layoutX="399.0" layoutY="15.0" />
    </children>
 </AnchorPane>

@@ -19,7 +19,6 @@ public class FileReaderSaver<T> implements Saver<T>, Reader<T>{
 
             objectOutputStream.flush();
             objectOutputStream.close();
-            System.out.println("zapisano");
         }
         catch (IOException e) {
             System.out.println("Problem with saving data to file");
