@@ -81,8 +81,8 @@ public class GameOfLifeThread extends Thread {
 
         int howManyAreMarked = 0;
 
-        for (int y = row - 1; y <= row + 1; y++) {
-            for (int x = col - 1; x <= col + 1; x++) {
+        for (int y = row - 1; y <= row+1; y++) {
+            for (int x = col - 1; x <= col+1; x++) {
 
                 if (y == row && x == col)
                     continue;
@@ -94,6 +94,18 @@ public class GameOfLifeThread extends Thread {
                 try {
                     if (cells[y][x])
                         howManyAreMarked++;
+                    if(row == 0)
+                        if(cells[cells.length-1][x])
+                            howManyAreMarked++;
+                    if(col == 0)
+                        if(cells[y][cells.length-1])
+                            howManyAreMarked++;
+                    if(row == cells.length-1)
+                        if(cells[0][x])
+                            howManyAreMarked++;
+                    if(col == cells.length-1)
+                        if (cells[y][0])
+                            howManyAreMarked++;
                 } catch (ArrayIndexOutOfBoundsException e) {
                     System.out.println("Out of bound in map error");
                 }

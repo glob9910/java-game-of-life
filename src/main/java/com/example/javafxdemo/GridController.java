@@ -9,7 +9,11 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
@@ -39,17 +43,50 @@ public class GridController implements Initializable {
     private final Color color = Color.BLUE;     //default drawing color
 
     private final FileReaderSaver<ArrayList<GridMap>> readerSaver;
+    private final String dataFileName;
 
-
-    public GridController(String filename) {
-        readerSaver = new FileReaderSaver<>(filename);
+    public GridController(String[] args) {
+        readerSaver = new FileReaderSaver<>(args[0]);
+        this.dataFileName = args[1];
     }
     public void initialize(URL url, ResourceBundle resourceBundle) {
+
+        setData(dataFileName);
 
         ArrayList<GridMap> drawings = new ArrayList<>();
         if(readerSaver.read() != null)
             drawings.addAll(readerSaver.read());
         savedGrids.getItems().addAll(drawings);
+    }
+
+    private void setData(String dataFile) {
+
+        try {
+            String[] data = (Files.readString(Path.of(dataFile))).split("\n");
+
+            sizeTextField.setText(data[0]);
+            squaresPerSide = Integer.parseInt(data[0]);
+
+
+            gridMap = new GridMap(squaresPerSide, squaresPerSide);
+            int numberOfLivingSquares = Integer.parseInt(data[3]);
+
+            for(int line = 4; line<4+numberOfLivingSquares; line++) {
+                String squareCoordinates[] = data[line].split(" ");
+                gridMap.setSquare(
+                        Integer.parseInt(squareCoordinates[0]),
+                        Integer.parseInt(squareCoordinates[1])
+                );
+            }
+
+            setSquareSize();
+            drawGrid();
+            drawMap();
+        }
+        catch(FileNotFoundException ignored) {
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @FXML

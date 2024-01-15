@@ -16,7 +16,7 @@ public class Main extends Application {
 
             var loader = new FXMLLoader(getClass().getResource("gridView.fxml"));
             loader.setControllerFactory((ignored) -> {
-                return new GridController(params[0]);
+                return new GridController(params);
             });
             Parent root = loader.load();
             Scene scene = new Scene(root);
