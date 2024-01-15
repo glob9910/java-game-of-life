@@ -38,7 +38,6 @@ public class FileReaderSaver<T> implements Saver<T>, Reader<T>{
                 ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
                 values = (T) objectInputStream.readObject();
 
-
                 objectInputStream.close();
             }
         } catch (EOFException e) {

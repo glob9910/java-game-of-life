@@ -1,14 +1,12 @@
 package com.example.javafxdemo;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.Slider;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
 import java.net.URL;
@@ -24,77 +22,105 @@ public class GridController implements Initializable {
     @FXML
     private TextField numberOfThreadsTextField;
     @FXML
+    private TextField pictureName;
+    @FXML
     private ChoiceBox<GridMap> savedGrids;
     @FXML
-    Slider sleepTimeSlider;
+    private Slider sleepTimeSlider;
+    @FXML
+    private Label errorLabel;
+    @FXML
+    private Button beginSimulationButton;
 
-    ///////// ~controller
     private int squaresPerSide;
-    private int squareSize;
-
+    private double squareSize;
     private GridMap gridMap;
     private GameOfLifeThread[] threads;
     private final Color color = Color.BLUE;     //default drawing color
 
-    //?
-    public volatile int sleepTime;
+    private final FileReaderSaver<ArrayList<GridMap>> readerSaver;
 
 
-    //"siatki.bin"
+    public GridController(String filename) {
+        readerSaver = new FileReaderSaver<>(filename);
+    }
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
-        ObservableList<GridMap> drawings = FXCollections.observableArrayList();
-        if(new FileReaderSaver<ArrayList<GridMap>>("siatki.bin").read() != null)
-            drawings.addAll(new FileReaderSaver<ArrayList<GridMap>>("siatki.bin").read());
-        savedGrids.setItems(drawings);
+        ArrayList<GridMap> drawings = new ArrayList<>();
+        if(readerSaver.read() != null)
+            drawings.addAll(readerSaver.read());
+        savedGrids.getItems().addAll(drawings);
     }
 
-    //walidacja danych size
     @FXML
-    private void drawMapStart() {
-        gridMap = savedGrids.getValue();
+    private void newMap() {
 
-        if (gridMap == null) {
+        errorLabel.setText("");
+
+        try {
+            if(sizeTextField.getText().isEmpty()) {
+                errorLabel.setText("Input a number");
+                return;
+            }
+
             squaresPerSide = Integer.parseInt(sizeTextField.getText());
-            setSquareSize();
-            gridMap = new GridMap(squaresPerSide, squaresPerSide);
-        } else {
-            squaresPerSide = gridMap.getHeight();
-            setSquareSize();
+            if(squaresPerSide<=0) {
+                errorLabel.setText("Input only positive numbers");
+                return;
+            }
+        } catch(NumberFormatException e) {
+            errorLabel.setText("Input only numbers");
         }
+
+        setSquareSize();
+        gridMap = new GridMap(squaresPerSide, squaresPerSide);
 
         drawGrid();
         drawMap();
     }
 
-    //może to powoduje problem z większymi siatkami?
-    private void setSquareSize() {
-        squareSize = (int) (canvas.getWidth() / squaresPerSide);
+    @FXML
+    private void drawMapStart() {
+
+        gridMap = savedGrids.getValue();
+        errorLabel.setText("");
+
+        squaresPerSide = gridMap.getHeight();
+        setSquareSize();
+
+        drawGrid();
+        drawMap();
     }
 
-    //problem z tym co wyzej
+    private void setSquareSize() {
+        squareSize =  canvas.getWidth()/squaresPerSide;
+    }
+
     private void drawGrid() {
 
         GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.setStroke(Color.BLACK);
 
-        for (int x = 0; x <= canvas.getWidth(); x += squareSize)
-            gc.strokeLine(x, 0, x, canvas.getHeight());
+        for (int x = 0; x < squaresPerSide; x++)
+            gc.strokeLine(x*squareSize, 0, x*squareSize, squareSize*squaresPerSide);
 
-        for (int y = 0; y <= canvas.getHeight(); y += squareSize)
-            gc.strokeLine(0, y, canvas.getWidth(), y);
+        for (int y = 0; y < squaresPerSide; y++)
+            gc.strokeLine(0, y*squareSize, squareSize*squaresPerSide, y*squareSize);
     }
 
-    //dziwna lambda
     @FXML
     private void handleCanvasClick() {
-        canvas.setOnMouseClicked(event -> {
+
+        EventHandler<MouseEvent> handler = event -> {
             int col = (int) (event.getX() / squareSize);
             int row = (int) (event.getY() / squareSize);
 
             gridMap.setSquare(col, row);
             drawSquare(col, row, color);
-        });
+        };
+
+        canvas.setOnMouseDragged(handler);
+        canvas.setOnMouseClicked(handler);
     }
 
     private void drawSquare(int col, int row, Color color) {
@@ -118,15 +144,14 @@ public class GridController implements Initializable {
                canvas.getHeight()
         );
 
-        for (int i = 0; i < gridMap.getHeight(); i++)
-            for (int j = 0; j < gridMap.getHeight(); j++)
-                if (gridMap.getMap()[j][i])
-                    drawSquare(j, i, color);
+        for (int row = 0; row < gridMap.getHeight(); row++)
+            for (int col = 0; col < gridMap.getHeight(); col++)
+                if (gridMap.getMap()[col][row])
+                    drawSquare(col, row, color);
 
         drawGrid();
     }
 
-    //prawie to samo co powyzej
     public void drawThread(Color color, int start, int end) {
 
         canvas.getGraphicsContext2D().clearRect(
@@ -136,70 +161,94 @@ public class GridController implements Initializable {
                 (end-start)* squareSize
         );
 
-        for (int i = start; i < end; i++)
-            for (int j = 0; j < gridMap.getHeight(); j++)
-                if (gridMap.getMap()[j][i])
-                    drawSquare(j, i, color);
+        for (int row = start; row < end; row++)
+            for (int col = 0; col < gridMap.getHeight(); col++)
+                if (gridMap.getMap()[col][row])
+                    drawSquare(col, row, color);
 
         drawGrid();
     }
 
-    //"siatki.bin", informacje o pomyslnosci zapisu, przekazywanie name
     @FXML
     private void saveDrawing() {
 
+        gridMap.setName(pictureName.getText());
         ArrayList<GridMap> drawings = new ArrayList<>();
 
-        //?
-        if (new FileReaderSaver<ArrayList<GridMap>>("siatki.bin").read() != null)
-            drawings = new FileReaderSaver<ArrayList<GridMap>>("siatki.bin").read();
+        if (readerSaver.read() != null)
+            drawings = readerSaver.read();
 
+        savedGrids.getItems().add(gridMap);
         drawings.add(gridMap);
-        new FileReaderSaver<>("siatki.bin").save(drawings);
+        readerSaver.save(drawings);
+        errorLabel.setText("Saved successfully");
     }
 
-    //walidacja danych threads, ustawia i włącza, problem z dzieleniem nieparzystych wątków, wyłączanie przycisku, bo włączanie się wątków na wątkach
     @FXML
     private void setThreads() {
 
-        int numberOfThreads = Integer.parseInt(numberOfThreadsTextField.getText());
+        errorLabel.setText("");
 
-        int scale = squaresPerSide / numberOfThreads;
-        int actualHeight = 0;
-        int nextHeight = 0;
+        try {
+            if(gridMap == null) {
+                errorLabel.setText("Choose a picture");
+                return;
+            }
+            if(numberOfThreadsTextField.getText().isEmpty()) {
+                errorLabel.setText("Input number of Threads");
+                return;
+            }
 
-        threads = new GameOfLifeThread[numberOfThreads];
+            int numberOfThreads = Integer.parseInt(numberOfThreadsTextField.getText());
+            if(numberOfThreads<=0) {
+                errorLabel.setText("Number of Threads must be positive");
+                return;
+            }
 
-        for (int i = 0; i < threads.length; i++) {
+            int scale = squaresPerSide / numberOfThreads;
+            int rest = squaresPerSide%numberOfThreads;        // rest from division
+            int actualHeight = 0;
+            int nextHeight = 0;
 
-            if ((nextHeight += scale) > squaresPerSide)
-                nextHeight = squaresPerSide;
+            threads = new GameOfLifeThread[numberOfThreads];
 
-            threads[i] = new GameOfLifeThread(
-                    this,
-                    gridMap.getMap(),
-                    squaresPerSide,
-                    actualHeight,
-                    nextHeight
-            );
-            actualHeight = nextHeight;
+            for (int i = 0; i < threads.length; i++) {
+
+                if ((nextHeight += scale) > squaresPerSide)
+                    nextHeight = squaresPerSide;
+                if(rest>0) {
+                    nextHeight++;
+                    rest--;
+                }
+
+                threads[i] = new GameOfLifeThread(
+                        this,
+                        gridMap.getMap(),
+                        squaresPerSide,
+                        actualHeight,
+                        nextHeight,
+                        sleepTimeSlider.getValue()
+                );
+                actualHeight = nextHeight;
+            }
+
+        } catch (NumberFormatException e) {
+            errorLabel.setText("Number of Threads must be a number");
         }
 
         for(Thread thread: threads)
             thread.start();
+
+        beginSimulationButton.setDisable(true);
     }
 
-
-    //włączanie przycisku setThreads
     @FXML
     private void stopThreads() {
-        for(GameOfLifeThread thread: threads)
-            thread.stopThread();
-    }
+        if(threads!=null) {
+            beginSimulationButton.setDisable(false);
 
-    //to chyba niepotrzebne?: Można to zrobić przez EventHandler ze slidera
-    @FXML
-    private void setSleepTime() {
-        this.sleepTime = (int)sleepTimeSlider.getValue();
+            for(GameOfLifeThread thread: threads)
+                thread.stopThread();
+        }
     }
  }

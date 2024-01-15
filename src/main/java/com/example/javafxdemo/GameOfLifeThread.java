@@ -13,11 +13,9 @@ public class GameOfLifeThread extends Thread {
     private final int width;
     private final int startHeight;
     private final int endHeight;
-
-    //volatile? czy będzie konieczne, bo jest czytane w tym samym wątku, ale nie powinno być, bo slider
-    private volatile boolean running = true;
-    private volatile int sleepTime;
+    private final int sleepTime;
     private final Color color;
+    private volatile boolean running = true;
 
 
     public GameOfLifeThread(
@@ -25,7 +23,8 @@ public class GameOfLifeThread extends Thread {
             boolean[][] map,
             int width,
             int startHeight,
-            int endHeight
+            int endHeight,
+            double sleepTime
     ) {
 
         this.gridController = gridController;
@@ -33,6 +32,7 @@ public class GameOfLifeThread extends Thread {
         this.width = width;
         this.startHeight = startHeight;
         this.endHeight = endHeight;
+        this.sleepTime = (int)sleepTime;
         color = Color.rgb(
                 random.nextInt(200),
                 random.nextInt(200),
@@ -44,10 +44,7 @@ public class GameOfLifeThread extends Thread {
         running = false;
     }
 
-    //sleepTime, thread nie powinien mieć dostępu do tego pliku fxml, runLater dziwne
     public void run() {
-
-        sleepTime = gridController.sleepTime;
 
         while (running) {
             checkCells();
@@ -63,42 +60,42 @@ public class GameOfLifeThread extends Thread {
         }
     }
 
-    //error i czytelnosc i w checkNeighbours
     private void checkCells() {
 
         synchronized (cells) {
-            for (int i = startHeight; i < endHeight; i++) {
-                for (int j = 0; j < width; j++) {
-                    int howManyNeighbours = checkNeighbours(i, j);
-                    if (!cells[i][j] && howManyNeighbours == 3) {
-                        cells[i][j] = true;
-                    }
+            for (int row = startHeight; row < endHeight; row++)
+                for (int col = 0; col < width; col++) {
 
-                    if (cells[i][j] && (howManyNeighbours != 2 && howManyNeighbours != 3)) {
-                        cells[i][j] = false;        //overpopulation or loneliness
-                    }
+                    int howManyNeighbours = checkNeighbours(row, col);
+
+                    if (!cells[row][col] && howManyNeighbours == 3)
+                        cells[row][col] = true;
+
+                    if (cells[row][col] && (howManyNeighbours != 2 && howManyNeighbours != 3))
+                        cells[row][col] = false;        //overpopulation or loneliness
                 }
-            }
         }
     }
 
-    private int checkNeighbours(int i, int j) {
+    private int checkNeighbours(int row, int col) {
+
         int howManyAreMarked = 0;
-        for (int x = i - 1; x <= i + 1; x++) {
-            for (int y = j - 1; y <= j + 1; y++) {
-                if (x == i && y == j)
+
+        for (int y = row - 1; y <= row + 1; y++) {
+            for (int x = col - 1; x <= col + 1; x++) {
+
+                if (y == row && x == col)
                     continue;
-                if (x < 0 || y < 0)
+                if (y < 0 || x < 0)
                     continue;
-                if (x >= cells.length || y >= cells[0].length)
+                if (y >= cells.length || x >= cells[0].length)
                     continue;
 
                 try {
-                    if (cells[x][y]) {
+                    if (cells[y][x])
                         howManyAreMarked++;
-                    }
                 } catch (ArrayIndexOutOfBoundsException e) {
-                    System.out.println("error, but we ignore");
+                    System.out.println("Out of bound in map error");
                 }
             }
         }
