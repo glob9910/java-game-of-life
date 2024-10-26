@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import java.util.concurrent.CountDownLatch;
 
 public class GridController implements Initializable {
 
@@ -249,6 +250,7 @@ public class GridController implements Initializable {
 
             threads = new GameOfLifeThread[numberOfThreads];
 
+            CountDownLatch countDownLatch = new CountDownLatch(numberOfThreads);
             for (int i = 0; i < threads.length; i++) {
 
                 if ((nextHeight += scale) > squaresPerSide)
@@ -264,7 +266,8 @@ public class GridController implements Initializable {
                         squaresPerSide,
                         actualHeight,
                         nextHeight,
-                        sleepTimeSlider.getValue()
+                        sleepTimeSlider.getValue(),
+                        countDownLatch
                 );
                 actualHeight = nextHeight;
             }

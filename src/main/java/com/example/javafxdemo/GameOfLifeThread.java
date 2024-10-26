@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.scene.paint.Color;
 
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 
 public class GameOfLifeThread extends Thread {
 
@@ -17,6 +18,7 @@ public class GameOfLifeThread extends Thread {
     private final Color color;
     private volatile boolean running = true;
 
+    private final CountDownLatch countDownLatch;
 
     public GameOfLifeThread(
             GridController gridController,
@@ -24,7 +26,8 @@ public class GameOfLifeThread extends Thread {
             int width,
             int startHeight,
             int endHeight,
-            double sleepTime
+            double sleepTime,
+            CountDownLatch countdownLatch
     ) {
 
         this.gridController = gridController;
@@ -38,6 +41,7 @@ public class GameOfLifeThread extends Thread {
                 random.nextInt(200),
                 random.nextInt(200)
         );
+        this.countDownLatch = countdownLatch;
     }
 
     public void stopThread() {
@@ -54,6 +58,7 @@ public class GameOfLifeThread extends Thread {
 
             try {
                 Thread.sleep(sleepTime);
+                countDownLatch.countDown();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -62,7 +67,7 @@ public class GameOfLifeThread extends Thread {
 
     private void checkCells() {
 
-        synchronized (cells) {
+
             for (int row = startHeight; row < endHeight; row++)
                 for (int col = 0; col < width; col++) {
 
@@ -74,7 +79,7 @@ public class GameOfLifeThread extends Thread {
                     if (cells[row][col] && (howManyNeighbours != 2 && howManyNeighbours != 3))
                         cells[row][col] = false;        //overpopulation or loneliness
                 }
-        }
+
     }
 
     private int checkNeighbours(int row, int col) {
@@ -88,22 +93,22 @@ public class GameOfLifeThread extends Thread {
                     continue;
                 if (y < 0 || x < 0)
                     continue;
-                if (y >= cells.length || x >= cells[0].length)
+                if (y >= width || x >= width)
                     continue;
 
                 try {
                     if (cells[y][x])
                         howManyAreMarked++;
                     if(row == 0)
-                        if(cells[cells.length-1][x])
+                        if(cells[width-1][x])
                             howManyAreMarked++;
                     if(col == 0)
-                        if(cells[y][cells.length-1])
+                        if(cells[y][width-1])
                             howManyAreMarked++;
-                    if(row == cells.length-1)
+                    if(row == width-1)
                         if(cells[0][x])
                             howManyAreMarked++;
-                    if(col == cells.length-1)
+                    if(col == width-1)
                         if (cells[y][0])
                             howManyAreMarked++;
                 } catch (ArrayIndexOutOfBoundsException e) {
